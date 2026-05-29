@@ -39,7 +39,7 @@ WEB Based Games
 
 - [About OTW-CLI](#-about-otw-cli)
 - [Prerequisites](#-prerequisites)
-- [Usage Example](#usage-example)
+- [Usage Example](#-usage-example)
 - [Contributing](#-contributing)
 - [Connect With Me](#-connect-with-me)
 - [Why This Repository Exists](#-why-this-repository-exists)
