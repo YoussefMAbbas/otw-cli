@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+
+#  _                  _
+# / .__  _._|_ _  _| |_)
+# \_|(/_(_| |_(/_(_| |_)\/
+#                       /
+# __  __                      ___  ___   __   __
+# \ \/ /__  __ _____ ___ ___ / _/ / _ | / /  / /  ___ ____
+#  \  / _ \/ // (_-<(_-</ -_) _/ / __ |/ _ \/ _ \/ _ `(_-<
+#  /_/\___/\_,_/___/___/\__/_/  /_/ |_/_.__/_.__/\_,_/___/
+
+# Socials: linkedin.com/in/youssefmabbas | github.com/youssefmabbas | medium.com/@youssefmabbas
+
+set -e
+
+echo -e "\n\e[33m|created by youssefmabbas|\e[0m\n"
+
+img_proto=0
+
+if ! command -v jp2a &>/dev/null && ! command -v imgcat &>/dev/null; then
+
+	cat <<'EOF'
+      ,----..            ,----,          .---.
+     /   /   \         ,/   .`|         /. ./|
+    /   .     :      ,`   .'  :     .--'.  ' ;
+   .   /   ;.  \   ;    ;     /    /__./ \ : |
+  .   ;   /  ` ; .'___,/    ,' .--'.  '   \' .
+  ;   |  ; \ ; | |    :     | /___/ \ |    ' '
+  |   :  | ; | ' ;    |.';  ; ;   \  \;      :
+  .   |  ' ' ' : `----'  |  |  \   ;  `      |
+  '   ;  \; /  |     '   :  ;   .   \    .\  ;
+   \   \  ',  /      |   |  '    \   \   ' \ |
+    ;   :    /       '   :  |     :   '  |--"
+     \   \ .'        ;   |.'       \   \ ;
+  www. `---` ver     '---' he       '---" ire.org
+EOF
+
+fi
+
+if ! command -v imgcat &>/dev/null; then
+	echo "Warning command 'imgcat' wasn't found!"
+else
+	imgcat --W 500px -u "https://overthewire.org/img/domokitten.png"
+	img_proto=1
+fi
+
+if [ $img_proto -eq 1 ]; then
+	printf ""
+elif ! command -v jp2a &>/dev/null; then
+	echo "Warning command 'jp2a' wasn't found!"
+else
+	jp2a --colors --width=40 "https://overthewire.org/img/domokitten.png"
+fi
+
+echo -e "\n\e[37mFetching: 'https://overthewire.org/games.json'\n"
+
+otw_json="$HOME/.cache/overthewire.json"
+if [ ! -f "$otw_json" ]; then
+	curl -s https://overthewire.org/games.json -o "$otw_json"
+fi
+
+list_games="$(jq -r 'keys[]' "$otw_json" | nl -n rz -s " - " -w 2)"
+echo -e "\e[0m============================"
+echo -e "\e[33m: Pick Your Poison :\n\e[34m${list_games[*]}"
+echo -e "\e[0m============================"
+
+printf "\e[36m* Enter game name: "
+read -r game_name
+
+mapfile -t availble_games < <(jq -r 'keys[]' "$otw_json")
+while true; do
+	match_found=false
+
+	for game in "${availble_games[@]}"; do
+		if [ "$game_name" = "$game" ]; then
+			match_found=true
+			break
+		fi
+	done
+
+	if $match_found; then
+		echo
+		echo -e "\e[33m : Getting game info :"
+		break
+	else
+		echo -e "\e[31m! Please choose one of the available games !"
+		printf "\e[36m* Enter game name: "
+		read -r game_name
+	fi
+done
+
+last_level=$(jq ".${game_name}.lastlevel" -r "$otw_json")
+host=$(jq ".${game_name}.host" -r "$otw_json")
+port=$(jq ".${game_name}.port" -r "$otw_json")
+
+while true; do
+	printf "\e[36m* Enter level (0-%d): " "$last_level"
+	read -r chosen_level
+
+	if [[ ! "$chosen_level" =~ ^[0-9]+$ ]]; then
+		echo -e "\e[31m! Please enter a valid number !"
+		continue
+	fi
+
+	if ((chosen_level < 0 || chosen_level > last_level)); then
+		echo -e "\e[31m! Level must be between 0 and $last_level !"
+
+	else
+		break
+	fi
+done
+
+if [ "$game_name" == "natas" ]; then
+	exec $BROWSER --new-tab "http://${game_name}${chosen_level}.${game_name}.labs.overthewire.org"
+
+elif [ "$game_name" == "blacksun" ]; then
+	exec $BROWSER --new-tab "https://overthewire.org/wargames/$game_name/$game_name$chosen_level.html"
+
+else
+	printf "\e[36m* Enter level password: "
+	read -r -s password
+	echo -e "\e[32m\nConnecting to the game...\e[0m"
+	exec sshpass -p "$password" ssh -o StrictHostKeyChecking=no "$game_name""$chosen_level"@"$host" -p "$port"
+fi
