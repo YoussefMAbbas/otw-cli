@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fthanoskoutr.com%2Fcovers%2Foverthewire.jpg&f=1&nofb=1&ipt=910f2eeba2af2cd177288c1db80b2209ec69701f9a2880e9899c15884b9167c2"
        alt="OverTheWire Banner"
-       width="250">
+       width="500">
 </p>
 
 <h1 align="center">OverTheWire CLI a cooler way to connect to wargames</h1>
